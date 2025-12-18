@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LGS Sonuç Sistemi</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f3; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; }
+        h2 { color: #2c3e50; margin-bottom: 1.5rem; font-weight: 600; }
+        
+        /* Şifre Giriş Alanı */
+        input[type="password"] { 
+            width: 100%; padding: 15px; margin: 10px 0; 
+            border: 2px solid #e0e0e0; border-radius: 12px; 
+            box-sizing: border-box; font-size: 18px; text-align: center; letter-spacing: 2px; transition: 0.3s;
+        }
+        input[type="password"]:focus { border-color: #3498db; outline: none; }
+        
+        button { 
+            width: 100%; padding: 15px; background-color: #3498db; 
+            color: white; border: none; border-radius: 12px; 
+            cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; transition: 0.3s;
+        }
+        button:hover { background-color: #2980b9; }
+        
+        .hidden { display: none; }
+        .error { color: #e74c3c; margin-top: 15px; font-size: 0.9rem; }
+        
+        /* Sonuç Ekranı */
+        .result-header h3 { margin: 0; color: #7f8c8d; font-size: 1.1rem; }
+        .big-score { font-size: 3.5rem; font-weight: 800; color: #27ae60; margin: 10px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .lesson-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f1f1; font-size: 0.95rem; }
+        .lesson-name { font-weight: 600; color: #34495e; text-align: left; width: 40%; }
+        .lesson-stats { color: #7f8c8d; font-size: 0.85rem; width: 30%; text-align: center; }
+        .net-score { color: #2980b9; font-weight: bold; width: 30%; text-align: right; }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen" class="card">
+        <h2>Sınav Sonucunu Öğren</h2>
+        <p style="color:#777; font-size:0.9rem; margin-bottom:20px;">Size verilen sınav şifresini giriniz.</p>
+        
+        <input type="password" id="sifre" placeholder="ŞİFRE" onkeyup="enterKontrol(event)">
+        <button onclick="sorgula()">SORGULA</button>
+        <p id="hata-mesaji" class="error"></p>
+    </div>
+
+    <div id="result-screen" class="card hidden">
+        <div class="result-header">
+            <h3 id="ogrenci-adi">Öğrenci Adı</h3>
+            <div style="margin-top:5px; font-size:0.9rem; color:#999;">LGS TAHMİNİ PUAN</div>
+            <div class="big-score" id="lgs-puani">000.000</div>
+        </div>
+        
+        <div id="ders-listesi" style="margin-top: 20px;">
+            </div>
+
+        <button onclick="location.reload()" style="background-color: #95a5a6; margin-top:20px;">Yeni Sorgulama</button>
+    </div>
+
+    <script>
+        function enterKontrol(event) {
+            if (event.key === "Enter") {
+                sorgula();
+            }
+        }
+
+        async function sorgula() {
+            const sifre = document.getElementById('sifre').value.trim();
+            const hataKutusu = document.getElementById('hata-mesaji');
+
+            if (!sifre) {
+                hataKutusu.innerText = "Lütfen şifrenizi girin.";
+                return;
+            }
+
+            hataKutusu.innerText = "Sorgulanıyor...";
+
+            try {
+                // Şifre ile eşleşen JSON dosyasını çağır
+                const response = await fetch(`veriler/${sifre}.json?v=${new Date().getTime()}`);
+                
+                if (!response.ok) {
+                    throw new Error("Dosya bulunamadı");
+                }
+
+                const veri = await response.json();
+                sonuclariGoster(veri);
+
+            } catch (error) {
+                hataKutusu.innerText = "Hatalı şifre girdiniz.";
+            }
+        }
+
+        function sonuclariGoster(veri) {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            document.getElementById('ogrenci-adi').innerText = veri.ad || "Öğrenci";
+            document.getElementById('lgs-puani').innerText = veri.puan;
+
+            const dersListesi = document.getElementById('ders-listesi');
+            dersListesi.innerHTML = ''; 
+
+            // İstediğiniz sıralamada göstermek için
+            const siralama = ['TR', 'INK', 'DIN', 'ING', 'MAT', 'FEN'];
+            
+            const dersAdlari = {
+                'TR': 'TÜRKÇE', 'INK': 'İNKILAP', 'DIN': 'DİN K.', 
+                'ING': 'İNGİLİZCE', 'MAT': 'MATEMATİK', 'FEN': 'FEN BİL.'
+            };
+
+            siralama.forEach(kod => {
+                if(veri.dersler[kod]) {
+                    const detay = veri.dersler[kod];
+                    const html = `
+                    <div class="lesson-row">
+                        <span class="lesson-name">${dersAdlari[kod]}</span>
+                        <span class="lesson-stats">${detay.d} D - ${detay.y} Y</span>
+                        <span class="net-score">${detay.n} Net</span>
+                    </div>`;
+                    dersListesi.innerHTML += html;
+                }
+            });
+        }
+    </script>
+</body>
+</html>
