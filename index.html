@@ -2,65 +2,187 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LGS Sonuç Sistemi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>LGS Sınav Sonuç Sistemi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f3; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); width: 100%; max-width: 400px; text-align: center; }
-        h2 { color: #2c3e50; margin-bottom: 1.5rem; font-weight: 600; }
-        
-        /* Şifre Giriş Alanı */
-        input[type="password"] { 
-            width: 100%; padding: 15px; margin: 10px 0; 
-            border: 2px solid #e0e0e0; border-radius: 12px; 
-            box-sizing: border-box; font-size: 18px; text-align: center; letter-spacing: 2px; transition: 0.3s;
+        :root {
+            --primary-color: #4a90e2; /* Ana mavi renk */
+            --secondary-color: #8e44ad; /* İkincil mor renk */
+            --success-color: #2ecc71; /* Yeşil renk */
+            --text-dark: #34495e;
+            --text-light: #7f8c8d;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        input[type="password"]:focus { border-color: #3498db; outline: none; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-gradient);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 40px 30px;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Kartın üstüne ince renkli çizgi */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 6px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+        }
+
+        h2 {
+            color: var(--text-dark);
+            margin: 0 0 10px 0;
+            font-weight: 700;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+        }
+        
+        /* --- Form Alanları --- */
+        .input-group { margin-bottom: 20px; }
+
+        input[type="password"] { 
+            width: 100%; padding: 18px;
+            border: 2px solid #eef2f7; border-radius: 16px;
+            box-sizing: border-box; font-size: 18px; text-align: center;
+            letter-spacing: 3px; transition: all 0.3s ease;
+            background-color: #f9fbfd; color: var(--text-dark);
+            font-weight: 600;
+        }
+        input[type="password"]::placeholder { color: #b0b8c1; letter-spacing: 1px; font-weight: 400;}
+        input[type="password"]:focus { border-color: var(--primary-color); outline: none; background-color: #fff; box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1); }
         
         button { 
-            width: 100%; padding: 15px; background-color: #3498db; 
-            color: white; border: none; border-radius: 12px; 
-            cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 10px; transition: 0.3s;
+            width: 100%; padding: 18px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white; border: none; border-radius: 16px;
+            cursor: pointer; font-size: 18px; font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 10px 20px -10px rgba(118, 75, 162, 0.5);
         }
-        button:hover { background-color: #2980b9; }
+        button:hover { transform: translateY(-3px); box-shadow: 0 15px 30px -10px rgba(118, 75, 162, 0.7); }
+        button:active { transform: translateY(-1px); }
         
+        .error { color: #e74c3c; margin-top: 15px; font-size: 0.9rem; background: #fdeceb; padding: 10px; border-radius: 12px; display: none;}
+        .error.show { display: block; }
+        
+        /* --- Sonuç Ekranı Stilleri --- */
         .hidden { display: none; }
-        .error { color: #e74c3c; margin-top: 15px; font-size: 0.9rem; }
+
+        .student-name {
+            font-size: 1.4rem; font-weight: 600; color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        /* Puan Çemberi */
+        .score-circle-container {
+            display: flex; justify-content: center; margin: 25px 0;
+        }
+        .score-circle {
+            width: 160px; height: 160px;
+            background: white;
+            border-radius: 50%;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            box-shadow: 0 10px 30px rgba(74, 144, 226, 0.2);
+            border: 4px solid transparent;
+            background-image: linear-gradient(white, white), linear-gradient(to bottom right, var(--primary-color), var(--success-color));
+            background-origin: border-box; background-clip: content-box, border-box;
+        }
+        .score-label { font-size: 0.9rem; color: var(--text-light); font-weight: 500; }
+        .big-score { font-size: 2.8rem; font-weight: 800; color: var(--text-dark); line-height: 1.1; }
         
-        /* Sonuç Ekranı */
-        .result-header h3 { margin: 0; color: #7f8c8d; font-size: 1.1rem; }
-        .big-score { font-size: 3.5rem; font-weight: 800; color: #27ae60; margin: 10px 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .lesson-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f1f1f1; font-size: 0.95rem; }
-        .lesson-name { font-weight: 600; color: #34495e; text-align: left; width: 40%; }
-        .lesson-stats { color: #7f8c8d; font-size: 0.85rem; width: 30%; text-align: center; }
-        .net-score { color: #2980b9; font-weight: bold; width: 30%; text-align: right; }
+        /* Ders Listesi */
+        .lesson-list { margin-top: 30px; text-align: left; }
+        .lesson-row { 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 15px; margin-bottom: 10px;
+            background-color: #f8faff; border-radius: 12px;
+            border-left: 4px solid var(--primary-color);
+            transition: transform 0.2s;
+        }
+        .lesson-row:hover { transform: translateX(5px); background-color: #f0f4ff;}
+
+        .lesson-info { display: flex; flex-direction: column; }
+        .lesson-name { font-weight: 600; color: var(--text-dark); font-size: 1rem; }
+        .lesson-stats { color: var(--text-light); font-size: 0.8rem; margin-top: 2px; }
+        .net-score-box { 
+            background: white; padding: 8px 15px; border-radius: 10px;
+            color: var(--primary-color); font-weight: 700; font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            min-width: 60px; text-align: center;
+        }
+
+        /* Ana dersleri vurgula */
+        .lesson-row.main-subject { border-left-color: var(--secondary-color); }
+        .lesson-row.main-subject .net-score-box { color: var(--secondary-color); }
+
+        .btn-secondary {
+            background: #eef2f7; color: var(--text-light);
+            box-shadow: none; margin-top: 25px;
+        }
+        .btn-secondary:hover { background: #dfe6ed; color: var(--text-dark); transform: none; box-shadow: none;}
+
     </style>
 </head>
 <body>
 
-    <div id="login-screen" class="card">
-        <h2>Sınav Sonucunu Öğren</h2>
-        <p style="color:#777; font-size:0.9rem; margin-bottom:20px;">Size verilen sınav şifresini giriniz.</p>
-        
-        <input type="password" id="sifre" placeholder="ŞİFRE" onkeyup="enterKontrol(event)">
-        <button onclick="sorgula()">SORGULA</button>
-        <p id="hata-mesaji" class="error"></p>
-    </div>
-
-    <div id="result-screen" class="card hidden">
-        <div class="result-header">
-            <h3 id="ogrenci-adi">Öğrenci Adı</h3>
-            <div style="margin-top:5px; font-size:0.9rem; color:#999;">LGS TAHMİNİ PUAN</div>
-            <div class="big-score" id="lgs-puani">000.000</div>
-        </div>
-        
-        <div id="ders-listesi" style="margin-top: 20px;">
+    <div class="container">
+        <div id="login-screen">
+            <h2>Sınav Sonucu</h2>
+            <p class="subtitle">Size verilen sınav şifresi ile giriş yapınız.</p>
+            
+            <div class="input-group">
+                <input type="password" id="sifre" placeholder="ŞİFRE" onkeyup="enterKontrol(event)" autocomplete="off">
             </div>
+            <button id="sorgulaBtn" onclick="sorgula()">SONUCU GÖSTER</button>
+            <div id="hata-mesaji" class="error"></div>
+        </div>
 
-        <button onclick="location.reload()" style="background-color: #95a5a6; margin-top:20px;">Yeni Sorgulama</button>
+        <div id="result-screen" class="hidden">
+            <div class="student-name" id="ogrenci-adi">Öğrenci Adı</div>
+            <div style="color: var(--text-light); font-size: 0.9rem;">LGS Deneme Sınavı Sonucu</div>
+            
+            <div class="score-circle-container">
+                <div class="score-circle">
+                    <span class="score-label">TAHMİNİ PUAN</span>
+                    <span class="big-score" id="lgs-puani">000.000</span>
+                </div>
+            </div>
+            
+            <div id="ders-listesi" class="lesson-list">
+                </div>
+
+            <button class="btn-secondary" onclick="location.reload()">Yeni Sorgulama Yap</button>
+        </div>
     </div>
 
     <script>
+        const hataKutusu = document.getElementById('hata-mesaji');
+        const sorgulaBtn = document.getElementById('sorgulaBtn');
+
         function enterKontrol(event) {
             if (event.key === "Enter") {
                 sorgula();
@@ -68,18 +190,23 @@
         }
 
         async function sorgula() {
-            const sifre = document.getElementById('sifre').value.trim();
-            const hataKutusu = document.getElementById('hata-mesaji');
+            const sifreInput = document.getElementById('sifre');
+            const sifre = sifreInput.value.trim();
+            
+            hataKutusu.classList.remove('show');
 
             if (!sifre) {
-                hataKutusu.innerText = "Lütfen şifrenizi girin.";
+                showError("Lütfen şifrenizi giriniz.");
                 return;
             }
 
-            hataKutusu.innerText = "Sorgulanıyor...";
+            // Butonu yükleniyor moduna al
+            sorgulaBtn.innerText = "Sorgulanıyor...";
+            sorgulaBtn.disabled = true;
+            sifreInput.disabled = true;
 
             try {
-                // Şifre ile eşleşen JSON dosyasını çağır
+                // Cache önlemek için zaman damgası ekliyoruz
                 const response = await fetch(`veriler/${sifre}.json?v=${new Date().getTime()}`);
                 
                 if (!response.ok) {
@@ -87,44 +214,42 @@
                 }
 
                 const veri = await response.json();
-                sonuclariGoster(veri);
+                // Kısa bir gecikme efekti verelim ki yükleme hissi oluşsun
+                setTimeout(() => {
+                    sonuclariGoster(veri);
+                }, 500);
 
             } catch (error) {
-                hataKutusu.innerText = "Hatalı şifre girdiniz.";
+                showError("Hatalı şifre! Lütfen kontrol edip tekrar deneyiniz.");
+                resetForm();
             }
+        }
+
+        function showError(msg) {
+            hataKutusu.innerText = msg;
+            hataKutusu.classList.add('show');
+        }
+
+        function resetForm() {
+            sorgulaBtn.innerText = "SONUCU GÖSTER";
+            sorgulaBtn.disabled = false;
+            document.getElementById('sifre').disabled = false;
         }
 
         function sonuclariGoster(veri) {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('result-screen').classList.remove('hidden');
 
-            document.getElementById('ogrenci-adi').innerText = veri.ad || "Öğrenci";
-            document.getElementById('lgs-puani').innerText = veri.puan;
+            document.getElementById('ogrenci-adi').innerText = veri.ad || "Sayın Öğrenci";
+            // Puanı virgülden sonra 3 basamak gösterelim
+            const puanFormatli = parseFloat(veri.puan).toLocaleString('tr-TR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+            document.getElementById('lgs-puani').innerText = puanFormatli;
 
             const dersListesi = document.getElementById('ders-listesi');
             dersListesi.innerHTML = ''; 
 
-            // İstediğiniz sıralamada göstermek için
-            const siralama = ['TR', 'INK', 'DIN', 'ING', 'MAT', 'FEN'];
+            // Sıralama ve Ana Ders Belirleme
+            const siralama = ['TR', 'MAT', 'FEN', 'INK', 'DIN', 'ING'];
+            const anaDersler = ['TR', 'MAT', 'FEN'];
             
             const dersAdlari = {
-                'TR': 'TÜRKÇE', 'INK': 'İNKILAP', 'DIN': 'DİN K.', 
-                'ING': 'İNGİLİZCE', 'MAT': 'MATEMATİK', 'FEN': 'FEN BİL.'
-            };
-
-            siralama.forEach(kod => {
-                if(veri.dersler[kod]) {
-                    const detay = veri.dersler[kod];
-                    const html = `
-                    <div class="lesson-row">
-                        <span class="lesson-name">${dersAdlari[kod]}</span>
-                        <span class="lesson-stats">${detay.d} D - ${detay.y} Y</span>
-                        <span class="net-score">${detay.n} Net</span>
-                    </div>`;
-                    dersListesi.innerHTML += html;
-                }
-            });
-        }
-    </script>
-</body>
-</html>
