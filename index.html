@@ -41,6 +41,18 @@
         h1 { font-size: 1.2rem; color: var(--primary-color); margin-bottom: 5px; line-height: 1.4; font-weight: 700; }
         h3 { font-size: 0.9rem; font-weight: 500; color: #7f8c8d; margin-top: 0; margin-bottom: 20px; }
 
+        /* Açıklama Metni */
+        .instruction {
+            font-size: 0.9rem;
+            color: #555;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            border: 1px solid #e9ecef;
+        }
+
         /* Giriş Alanı */
         input[type="password"] { 
             width: 100%; padding: 12px;
@@ -114,6 +126,11 @@
         <h3>Sınav Sonuç Ekranı</h3>
 
         <div id="login-screen">
+            <div class="instruction">
+                Size daha önceden verilen kimlik kartlarındaki QR kodu <b>"QR KOD İLE GİRİŞ"</b> butonuna tıklayarak okutun.<br><br>
+                Okutamazsanız size verilen kimlikte QR kodun altında yazan numarayı olduğu gibi yazın.
+            </div>
+
             <div id="reader"></div>
 
             <input type="password" id="sifre" placeholder="ŞİFRE" onkeyup="enterKontrol(event)">
@@ -170,13 +187,16 @@
             document.getElementById('reader').style.display = "block";
             hataKutusu.style.display = "none";
 
-            html5QrCode = new Html5Qrcode("reader");
+            // Mobilde daha iyi çalışması için arka kamerayı zorla
             const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            html5QrCode = new Html5Qrcode("reader");
             
             html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
             .catch(err => {
-                hataKutusu.innerText = "Kamera başlatılamadı. İzinleri kontrol edin.";
+                hataKutusu.innerText = "Kamera başlatılamadı. Tarayıcı izinlerini kontrol edin.";
                 hataKutusu.style.display = "block";
+                document.getElementById('qrBtn').classList.remove('hidden');
+                document.getElementById('qrKapatBtn').classList.add('hidden');
             });
         }
 
@@ -191,14 +211,18 @@
         }
 
         function onScanSuccess(decodedText, decodedResult) {
-            // QR okunduğunda çalışır
+            // QR okunduğunda bip sesi çalmak istersek buraya ekleriz, şimdilik sadece yazalım
             document.getElementById('sifre').value = decodedText; // Şifreyi kutuya yaz
             kameraKapat(); // Kamerayı kapat
-            sorgula(); // Otomatik sorgula
+            
+            // Kullanıcıya okunduğunu hissettirmek için ufak bir gecikme
+            setTimeout(() => {
+                 sorgula(); 
+            }, 300);
         }
 
         function onScanFailure(error) {
-            // Okuma denemesi başarısızsa (henüz kod görülmediyse) burası çalışır, işlem yapmaya gerek yok.
+            // Sürekli tarama yaptığı için burayı boş bırakıyoruz.
         }
 
         // --- SORGULAMA İŞLEMLERİ ---
@@ -223,7 +247,7 @@
                 setTimeout(() => { sonuclariGoster(veri); }, 400);
 
             } catch (error) {
-                hataKutusu.innerText = "Hatalı şifre veya kayıt bulunamadı.";
+                hataKutusu.innerText = "Hatalı şifre girdiniz.";
                 hataKutusu.style.display = "block";
                 sorgulaBtn.innerText = "SONUCU GÖSTER";
                 sorgulaBtn.disabled = false;
