@@ -10,8 +10,8 @@
     <style>
         :root {
             --primary-color: #c0392b; /* Bordo */
+            --dark-color: #2c3e50;
             --bg-gradient: linear-gradient(135deg, #ece9e6 0%, #ffffff 100%);
-            --text-dark: #2c3e50;
         }
 
         body {
@@ -23,7 +23,7 @@
             min-height: 100vh;
             margin: 0;
             padding: 10px;
-            color: var(--text-dark);
+            color: var(--dark-color);
         }
 
         .container {
@@ -43,78 +43,66 @@
 
         /* Açıklama Metni */
         .instruction {
-            font-size: 0.9rem;
-            color: #555;
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            line-height: 1.5;
+            font-size: 0.85rem; color: #555;
+            background-color: #f8f9fa; padding: 12px;
+            border-radius: 10px; margin-bottom: 20px;
             border: 1px solid #e9ecef;
         }
 
-        /* Giriş Alanı */
+        /* Butonlar */
+        button { 
+            width: 100%; padding: 15px; 
+            border: none; border-radius: 10px;
+            cursor: pointer; font-size: 16px; font-weight: 600;
+            transition: 0.2s; margin-bottom: 10px;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+        }
+
+        /* QR Butonu (Ana Buton) */
+        .btn-qr { background-color: var(--dark-color); color: white; }
+        .btn-qr:hover { background-color: #1a252f; }
+
+        /* Elle Giriş Butonu (İkincil) */
+        .btn-manual { background-color: #ecf0f1; color: var(--dark-color); border: 1px solid #bdc3c7;}
+        .btn-manual:hover { background-color: #bdc3c7; }
+
+        /* Sorgula Butonu */
+        .btn-primary { background-color: var(--primary-color); color: white; margin-top: 5px;}
+        .btn-primary:hover { background-color: #a93226; }
+
+        /* Giriş Alanı (Başlangıçta Gizli Olacak) */
+        .manual-input-area {
+            background: #fff4f2;
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px dashed var(--primary-color);
+            margin-top: 10px;
+        }
+
         input[type="password"] { 
             width: 100%; padding: 12px;
             border: 2px solid #ddd; border-radius: 8px;
             box-sizing: border-box; font-size: 18px; text-align: center;
-            letter-spacing: 3px; margin-bottom: 10px;
+            letter-spacing: 3px; margin-bottom: 10px; background: white;
         }
-        
-        button { 
-            width: 100%; padding: 12px; 
-            background-color: var(--primary-color);
-            color: white; border: none; border-radius: 8px;
-            cursor: pointer; font-size: 16px; font-weight: 600;
-            transition: 0.2s; margin-top: 5px;
-        }
-        button:hover { background-color: #a93226; }
-
-        .btn-qr {
-            background-color: #34495e;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-        }
-        .btn-qr:hover { background-color: #2c3e50; }
 
         /* Kamera Alanı */
-        #reader { width: 100%; margin-top: 10px; display: none; border-radius: 10px; overflow: hidden;}
+        #reader { width: 100%; margin-bottom: 15px; display: none; border-radius: 10px; overflow: hidden; border: 2px solid var(--dark-color);}
         
         /* Tablo Tasarımı */
-        .result-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 0.9rem;
-        }
-        .result-table th {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 10px;
-            text-align: center;
-            font-weight: 600;
-        }
+        .result-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9rem; }
+        .result-table th { background-color: var(--primary-color); color: white; padding: 10px; text-align: center; font-weight: 600; }
         .result-table th:first-child { border-top-left-radius: 8px; text-align: left; padding-left: 15px;}
         .result-table th:last-child { border-top-right-radius: 8px; }
-        
-        .result-table td {
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-            text-align: center;
-        }
+        .result-table td { padding: 10px; border-bottom: 1px solid #eee; text-align: center; }
         .result-table td:first-child { text-align: left; padding-left: 15px; font-weight: 600; color: #555;}
         .result-table tr:nth-child(even) { background-color: #f9f9f9; }
         
         /* Puan Kartı */
-        .score-box {
-            background: #fdf2f1;
-            padding: 15px;
-            border-radius: 15px;
-            margin: 20px 0;
-            border: 1px solid #fadbd8;
-        }
+        .score-box { background: #fdf2f1; padding: 15px; border-radius: 15px; margin: 20px 0; border: 1px solid #fadbd8; }
         .big-score { font-size: 2.5rem; font-weight: 800; color: var(--primary-color); display: block; line-height: 1;}
 
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .error { color: #e74c3c; margin-top: 10px; font-size: 0.9rem; display: none; }
         .footer { margin-top: 25px; font-size: 0.75rem; color: #bdc3c7; border-top: 1px solid #f1f1f1; padding-top: 10px; }
     </style>
@@ -127,18 +115,21 @@
 
         <div id="login-screen">
             <div class="instruction">
-                Size daha önceden verilen kimlik kartlarındaki QR kodu <b>"QR KOD İLE GİRİŞ"</b> butonuna tıklayarak okutun.<br><br>
-                Okutamazsanız size verilen kimlikte QR kodun altında yazan numarayı olduğu gibi yazın.
+                Size verilen kimlik kartındaki QR Kodu okutarak veya altındaki şifreyi girerek sonucunuzu öğrenebilirsiniz.
             </div>
 
             <div id="reader"></div>
-
-            <input type="password" id="sifre" placeholder="ŞİFRE" onkeyup="enterKontrol(event)">
             
-            <button onclick="sorgula()" id="sorgulaBtn">SONUCU GÖSTER</button>
             <button onclick="kameraAc()" class="btn-qr" id="qrBtn">📷 QR KOD İLE GİRİŞ</button>
             <button onclick="kameraKapat()" class="btn-qr hidden" id="qrKapatBtn" style="background-color: #e74c3c;">❌ KAMERAYI KAPAT</button>
             
+            <button onclick="elleGirisAc()" class="btn-manual" id="manualBtn">⌨️ ELLE ŞİFRE GİRİŞİ</button>
+
+            <div id="manualArea" class="manual-input-area hidden">
+                <input type="password" id="sifre" placeholder="ŞİFRE" onkeyup="enterKontrol(event)">
+                <button onclick="sorgula()" id="sorgulaBtn" class="btn-primary">SONUCU GÖSTER</button>
+            </div>
+
             <div id="hata-mesaji" class="error"></div>
         </div>
 
@@ -180,23 +171,36 @@
             if (event.key === "Enter") sorgula();
         }
 
+        // Elle Giriş Alanını Açma
+        function elleGirisAc() {
+            document.getElementById('manualArea').classList.remove('hidden');
+            document.getElementById('manualBtn').classList.add('hidden'); // Butonu gizle
+            
+            // Kamera açıksa kapatalım ki karışıklık olmasın
+            if(!document.getElementById('qrKapatBtn').classList.contains('hidden')){
+                kameraKapat();
+            }
+        }
+
         // --- KAMERA İŞLEMLERİ ---
         function kameraAc() {
+            // Elle giriş açıksa gizleyelim (temiz görünüm için)
+            document.getElementById('manualArea').classList.add('hidden');
+            document.getElementById('manualBtn').classList.remove('hidden');
+
             document.getElementById('qrBtn').classList.add('hidden');
             document.getElementById('qrKapatBtn').classList.remove('hidden');
             document.getElementById('reader').style.display = "block";
             hataKutusu.style.display = "none";
 
-            // Mobilde daha iyi çalışması için arka kamerayı zorla
             const config = { fps: 10, qrbox: { width: 250, height: 250 } };
             html5QrCode = new Html5Qrcode("reader");
             
             html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanFailure)
             .catch(err => {
-                hataKutusu.innerText = "Kamera başlatılamadı. Tarayıcı izinlerini kontrol edin.";
+                hataKutusu.innerText = "Kamera başlatılamadı. İzinleri kontrol edin.";
                 hataKutusu.style.display = "block";
-                document.getElementById('qrBtn').classList.remove('hidden');
-                document.getElementById('qrKapatBtn').classList.add('hidden');
+                kameraKapat();
             });
         }
 
@@ -206,24 +210,24 @@
                     document.getElementById('reader').style.display = "none";
                     document.getElementById('qrBtn').classList.remove('hidden');
                     document.getElementById('qrKapatBtn').classList.add('hidden');
+                    html5QrCode = null;
                 }).catch(err => console.log(err));
+            } else {
+                // Nesne yoksa bile UI'ı düzelt
+                document.getElementById('reader').style.display = "none";
+                document.getElementById('qrBtn').classList.remove('hidden');
+                document.getElementById('qrKapatBtn').classList.add('hidden');
             }
         }
 
         function onScanSuccess(decodedText, decodedResult) {
-            // QR okunduğunda bip sesi çalmak istersek buraya ekleriz, şimdilik sadece yazalım
-            document.getElementById('sifre').value = decodedText; // Şifreyi kutuya yaz
-            kameraKapat(); // Kamerayı kapat
-            
-            // Kullanıcıya okunduğunu hissettirmek için ufak bir gecikme
-            setTimeout(() => {
-                 sorgula(); 
-            }, 300);
+            document.getElementById('sifre').value = decodedText; 
+            kameraKapat(); 
+            // Kullanıcıya işlemin başarılı olduğunu hissettirip sorgula
+            sorgula(); 
         }
 
-        function onScanFailure(error) {
-            // Sürekli tarama yaptığı için burayı boş bırakıyoruz.
-        }
+        function onScanFailure(error) {}
 
         // --- SORGULAMA İŞLEMLERİ ---
         async function sorgula() {
